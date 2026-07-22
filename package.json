@@ -1,0 +1,15 @@
+{
+  "name": "@cytoscape-web/multiscale-pathway-viewer",
+  "description": "App for expanding/folding pathway hierarchies from Reactome in Cytoscape Web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "webpack --config webpack.config.js --env production=true",
+    "build-dev": "webpack --config webpack.config.js --env production=false",
+    "dev": "webpack serve --open /remoteEntry.js --mode development"
+  },
+  "devDependencies": {
+    "@cytoscape-web/api-types": "^1.0.0-beta.2"
+  }
+}
