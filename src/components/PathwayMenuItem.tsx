@@ -1,19 +1,18 @@
 /**
- * TemplateMenuItem — Minimal Apps-menu action.
+ * PathwayMenuItem — the app's entry in the Apps dropdown.
  *
- * Demonstrates:
- *   - Creating a network from an edge list (simplest API usage)
- *   - MUI components in a menu item
- *   - closeOnAction: true in TemplateApp.resources[] means the dropdown
- *     closes automatically after the user clicks — no handleClose needed.
- *
- * Replace this with your own menu action.
+ * `closeOnAction: true` in MultiscalePathwayViewerApp.resources[] means the
+ * dropdown closes on click — no handleClose needed.
  */
-import Typography from '@mui/material/Typography'
+// Root-barrel import, NOT '@mui/material/Typography'. The share key is the
+// exact string '@mui/material', and the federation plugin matches share keys
+// exactly — a subpath import misses it and bundles MUI into this remote
+// instead of taking the host's instance, giving you a second Emotion cache.
+import { Typography } from '@mui/material'
 
 import { useNetworkApi } from 'cyweb/NetworkApi'
 
-const TemplateMenuItem = (): JSX.Element => {
+const PathwayMenuItem = (): JSX.Element => {
   const networkApi = useNetworkApi()
 
   const handleClick = (): void => {
@@ -44,4 +43,4 @@ const TemplateMenuItem = (): JSX.Element => {
   )
 }
 
-export default TemplateMenuItem
+export default PathwayMenuItem

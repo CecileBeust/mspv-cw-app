@@ -1,37 +1,81 @@
 /**
- * Context menu items registered during mount().
+ * Node context menu items, registered during mount().
  *
- * Each function receives the AppContext and registers one context menu item.
- * The host auto-cleans all items when the app is disabled.
+ * Each function receives the AppContext and registers one item. The host
+ * auto-cleans all of them when the app is disabled.
  *
- * This file is a good place to add new context menu items for your app.
- * See the hello-world app for more examples.
+ * All three hide or show nodes with a `nodeVisibility` bypass rather than
+ * deleting them, so folding a pathway is reversible.
  */
 import type { AppContext } from 'cyweb/ApiTypes'
 
-/**
- * Right-click a node → select all its direct neighbors.
- *
- * Demonstrates:
- *   - Graph Traversal API: element.getConnectedNodes()
- *   - Selection API: selection.additiveSelect()
- *   - Combining two APIs inside a context menu handler
- */
-export function registerSelectNeighbors(context: AppContext): void {
+import {
+  buildPathwayHierarchy,
+  getAllDescendants,
+  getDirectChildren,
+  getHierarchyRoots,
+} from './pathwayHierarchy'
+
+/** Right-click a pathway node → hide every subpathway beneath it, at any depth. */
+export function registerCollapseAllSubpathways(context: AppContext): void {
   context.apis.contextMenu.addContextMenuItem({
-    label: 'Template: Select Neighbors',
+    label: 'Collapse all subpathways',
     targetTypes: ['node'],
     handler: (ctx) => {
-      const neighborsResult = context.apis.element.getConnectedNodes(
+      const hierarchy = buildPathwayHierarchy(context, ctx.networkId)
+      const descendants = getAllDescendants(hierarchy, ctx.id!)
+      if (descendants.length === 0) return
+
+      context.apis.visualStyle.setBypass(
         ctx.networkId,
-        ctx.id!,
+        'nodeVisibility',
+        descendants,
+        'none',
       )
-      if (!neighborsResult.success) return
+    },
+  })
+}
 
-      const { nodeIds } = neighborsResult.data
-      if (nodeIds.length === 0) return
+/** Right-click anywhere → show every subpathway under every root pathway. */
+export function registerExpandAllSubpathways(context: AppContext): void {
+  context.apis.contextMenu.addContextMenuItem({
+    label: 'Expand all subpathways',
+    targetTypes: ['node'],
+    handler: (ctx) => {
+      const hierarchy = buildPathwayHierarchy(context, ctx.networkId)
+      const allNodes = context.apis.element.getNodeIds(ctx.networkId)
+      if (!allNodes.success) return
 
-      context.apis.selection.additiveSelect(ctx.networkId, nodeIds)
+      const roots = getHierarchyRoots(hierarchy, allNodes.data.nodeIds)
+      const toShow = roots.flatMap((root) => getAllDescendants(hierarchy, root))
+      if (toShow.length === 0) return
+
+      context.apis.visualStyle.setBypass(
+        ctx.networkId,
+        'nodeVisibility',
+        toShow,
+        'visible',
+      )
+    },
+  })
+}
+
+/** Right-click a pathway node → show one level of subpathways. */
+export function registerExpandDirectSubpathways(context: AppContext): void {
+  context.apis.contextMenu.addContextMenuItem({
+    label: 'Expand direct subpathways',
+    targetTypes: ['node'],
+    handler: (ctx) => {
+      const hierarchy = buildPathwayHierarchy(context, ctx.networkId)
+      const children = getDirectChildren(hierarchy, ctx.id!)
+      if (children.length === 0) return
+
+      context.apis.visualStyle.setBypass(
+        ctx.networkId,
+        'nodeVisibility',
+        children,
+        'visible',
+      )
     },
   })
 }

@@ -1,1 +1,1 @@
-export { multiscalePathwayViewer as default } from './multiscalePathwayViewer'
+export { MultiscalePathwayViewerApp as default } from './MultiscalePathwayViewerApp'

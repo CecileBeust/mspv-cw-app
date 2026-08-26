@@ -1,134 +1,151 @@
-# Cytoscape Web App — Starter Template
+# Multiscale Pathway Viewer — Cytoscape Web
 
-A ready-to-use Cytoscape Web plugin with a panel, a menu action, and a
-context menu item. Copy this directory to scaffold a new app.
+Expand and fold Reactome pathway hierarchies inside [Cytoscape Web](https://web.cytoscape.org).
+
+Reactome networks carry containment alongside everything else: a pathway node is
+connected to its subpathways by `abstraction:IsAComponentOf` edges. This app
+reads those edges and gives you three right-click actions on a node — collapse
+everything beneath it, expand one level, or expand the whole hierarchy. Nodes
+are hidden with a `nodeVisibility` bypass rather than deleted, so every fold is
+reversible.
 
 | Field | Value |
 |---|---|
-| Federation name | `template` (change this) |
-| Dev server port | `5555` (change this) |
-| Entry point | `template@http://localhost:5555/remoteEntry.js` |
+| Federation name | `multiscalePathwayViewer` (from `cyweb.id` in `package.json`) |
+| Dev server port | `6601` (from `cyweb.port` in `package.json`) |
+| Dev entry point | `http://localhost:6601/remoteEntry.js` |
+
+The build is **Vite + [`@cytoscape-web/app-runtime`](https://www.npmjs.com/package/@cytoscape-web/app-runtime)**
+(`defineCyWebApp` in [vite.config.ts](vite.config.ts)). The app's identity — id,
+display name, dev port — lives in the `cyweb` block in `package.json` and is
+read everywhere else from there: the federation container, the `CyApp` config
+via `virtual:cyweb-app-meta`, and the dev install manifest.
 
 ---
 
 ## Quick start
 
 ```bash
-# 1. Copy the template
-cp -r project-template my-app
-cd my-app
-
-# 2. Install dependencies
+# 1. Install dependencies (Node >= 24)
 npm install
 
-# 3. Start the dev server (host must be running on :5500)
+# 2. Start the dev server
 npm run dev
 ```
 
-Open `http://localhost:5500` → **Apps** → **App Settings** → enable your app.
+The dev server prints the link that installs the app into a running local host
+— **nothing in the host repository is edited**:
 
----
+```
+  Cytoscape Web app multiscalePathwayViewer — http://localhost:6601
 
-## What to change after copying
-
-### 1. `package.json`
-
-- `name` → your package name
-- `version` → your version
-
-### 2. `webpack.config.js`
-
-- `DEV_SERVER_PORT` → pick an unused port
-- `name` in `ModuleFederationPlugin` → unique camelCase string (must match
-  `id` in your app config)
-
-### 3. `src/TemplateApp.tsx`
-
-- `id` → must match the webpack federation `name`
-- `name`, `description` → human-readable labels
-- `resources` → add/remove panels and menu items
-- `mount()` → customize the context menu item or add more (edge, canvas)
-- `unmount()` → add cleanup for any event listeners you register
-
-### 4. `src/components/`
-
-- `TemplatePanel.tsx` → replace with your panel UI
-- `TemplateMenuItem.tsx` → replace with your menu action
-
-### 5. Host registration
-
-Add your app to the host's `src/assets/apps.local.json`:
-
-```json
-{ "name": "myApp", "url": "http://localhost:XXXX/remoteEntry.js" }
+  Install it into a local host:
+  http://localhost:5500/?installApp=http%3A%2F%2Flocalhost%3A6601%2Fcyweb-app.json
 ```
 
-> **Note:** The template itself is not pre-registered in `apps.local.json`.
-> To test it before copying, add the following entry:
->
-> ```json
-> { "name": "template", "url": "http://localhost:5555/remoteEntry.js" }
-> ```
+Start the host (`npm run dev` in a
+[cytoscape-web](https://github.com/cytoscape/cytoscape-web) checkout, on :5500),
+open that link (or paste `http://localhost:6601/cyweb-app.json` into
+**Apps → Manage Apps… → Install from URL**), confirm the install, and enable the
+app. The manifest at `/cyweb-app.json` is generated from `package.json` on every
+request, so it cannot go stale.
 
----
+Changes rebuild immediately, but Vite HMR does not cross the federation
+boundary — reload the host page to pick them up.
 
-## File structure
-
-```text
-project-template/
-├── src/
-│   ├── index.ts              ← re-exports app config as default
-│   ├── TemplateApp.tsx       ← app config: id, name, resources, lifecycle
-│   ├── contextMenus.ts      ← context menu registration (Graph Traversal example)
-│   └── components/
-│       ├── TemplatePanel.tsx  ← right-panel component (WorkspaceApi example)
-│       └── TemplateMenuItem.tsx ← apps-menu component (NetworkApi example)
-├── webpack.config.js          ← Module Federation config (name, port, remotes)
-├── tsconfig.json
-└── package.json
-```
-
----
-
-## What each file demonstrates
-
-| File | Pattern |
-|---|---|
-| `TemplateApp.tsx` | Declarative `resources[]`, `mount()` delegates to `contextMenus.ts` |
-| `contextMenus.ts` | `getConnectedNodes()` + `additiveSelect()` — Graph Traversal + Selection APIs |
-| `TemplatePanel.tsx` | `useWorkspaceApi()` + `ApiResult<T>` pattern, MUI shared singletons |
-| `TemplateMenuItem.tsx` | `useNetworkApi().createNetworkFromEdgeList()`, `closeOnAction: true` |
-| `webpack.config.js` | `env.production` flag switches between local and production host URL |
-
----
-
-## Context menus
-
-Right-click a node to see **"Template: Select Neighbors"** — it uses
-`getConnectedNodes()` to find adjacent nodes, then `additiveSelect()` to
-highlight them. The registration lives in `src/contextMenus.ts`.
-
-To add more items, create a new function in `contextMenus.ts` and call it
-from `mount()`. Items are auto-cleaned when the app is disabled.
-
----
-
-## Building for production
+## Other commands
 
 ```bash
-npx webpack --env production
+npm run build       # production build into dist/
+npm run build:zip   # the same, plus an App Store zip
+npm run verify      # cyweb-app verify — asserts the federation shape of dist/
+npm run typecheck   # tsc over app sources, vite.config.ts and tests
+npm test            # hierarchy unit tests + app config smoke test
 ```
-
-This switches the host remote from `localhost:5500` to `web.cytoscape.org` and
-enables minification.
 
 ---
 
-## Further reading
+## What the app does
 
-- [hello-world/](../hello-world/) — full reference app with 12 examples covering
-  all APIs
-- [guides/](../guides/) — App Developer Guide (getting started, architecture,
-  registration patterns, lifecycle, troubleshooting)
-- [@cytoscape-web/api-types](https://www.npmjs.com/package/@cytoscape-web/api-types) —
-  TypeScript types for all host APIs
+| Right-click a node → | Effect |
+|---|---|
+| Collapse all subpathways | Hides every descendant, at any depth |
+| Expand direct subpathways | Shows one level of children |
+| Expand all subpathways | Shows every descendant of every root pathway |
+
+All three set a `nodeVisibility` bypass (`none` / `visible`) through the Visual
+Style API. Nothing is deleted, so the network survives a fold intact.
+
+### Source layout
+
+| File | Role |
+|---|---|
+| [src/MultiscalePathwayViewerApp.tsx](src/MultiscalePathwayViewerApp.tsx) | The `CyApp` the host loads — identity, resources, `mount()` |
+| [src/contextMenus.ts](src/contextMenus.ts) | The three node context menu items |
+| [src/pathwayHierarchy.ts](src/pathwayHierarchy.ts) | Builds the parent/child map; pure functions over a `Map` |
+| [src/components/PathwayMenuItem.tsx](src/components/PathwayMenuItem.tsx) | The Apps-dropdown entry |
+| [src/index.ts](src/index.ts) | The `./AppConfig` module the host imports |
+
+### Hierarchy model
+
+`buildPathwayHierarchy` reads edge direction as **source = child, target =
+parent**, and keeps only edges whose `interaction` attribute is
+`abstraction:IsAComponentOf`. If your data reverses that direction, swap
+`sourceId`/`targetId` in [src/pathwayHierarchy.ts](src/pathwayHierarchy.ts).
+
+A "root" is a node that has children and no parent. Nodes outside the
+containment hierarchy are not roots, so expanding never touches them.
+
+---
+
+## The production bundle
+
+`npm run build` produces the deployable **Module Federation remote** in
+`dist/`. There are **no hardcoded host URLs** in the artifact:
+
+- The compiled-in entry for the `cyweb` remote is a **sentinel, not a URL**. At
+  load time the host publishes its own `remoteEntry.js` location on
+  `window.__CYWEB_HOST__`, and the app-runtime's runtime plugin swaps it in — so
+  one artifact works against `localhost`, `web.cytoscape.org`, or any other
+  deployment.
+- Chunk URLs resolve relative to wherever `remoteEntry.js` is served (Module
+  Federation `publicPath: 'auto'`), so the app can live at any origin and any
+  base path.
+
+`dist/` **is** the bundle: serve the whole folder side by side at one base URL.
+`remoteEntry.js` is the ESM container entry the host `import()`s; the exposed
+module is `./AppConfig`; `mf-manifest.json` carries the federation metadata that
+`npm run verify` checks against.
+
+### Deployment gotchas
+
+- **Shared deps are not bundled.** `react`, `react-dom`, `@mui/material`,
+  `@emotion/react` and `@emotion/styled` are shared singletons with
+  `import: false`: the remote consumes the **host's** copies. Sources must
+  import only the package roots (`'@mui/material'`, never `'@mui/material/Box'`),
+  and `@mui/icons-material` is off-limits — inline an SVG instead. The
+  `noSharedPayload` build gate fails the build if any of these leak into the
+  chunks.
+- **Cross-origin serving needs CORS.** The host imports `remoteEntry.js` and its
+  chunks cross-origin, so the files must be served with
+  `Access-Control-Allow-Origin` (the dev server already sends `*`).
+- **The remote type must stay ESM** to match the host's federation runtime.
+  `cyweb-app verify` asserts this, along with the sentinel entry and the shared
+  singleton records.
+
+---
+
+## Provenance
+
+Ported from the `multiscale-pathway-viewer` workspace in
+[CecileBeust/cytoscape-web-app-examples-cb](https://github.com/CecileBeust/cytoscape-web-app-examples-cb),
+which built with Webpack Module Federation and hardcoded host URLs. This repo is
+the same app on the current toolchain — see [MIGRATION.md](MIGRATION.md) for what
+changed and what is still outstanding.
+
+## Trust boundary
+
+An app runs in the **host's** browser context: same origin, DOM, storage and
+network identity. There is no sandbox and no signature verification. Install only
+apps you trust — and understand that asking someone to install this one asks the
+same of them.
