@@ -54,7 +54,7 @@ export function registerExpandAllSubpathways(context: AppContext): void {
         ctx.networkId,
         'nodeVisibility',
         toShow,
-        'visible',
+        'element',
       )
     },
   })
@@ -74,7 +74,7 @@ export function registerExpandDirectSubpathways(context: AppContext): void {
         ctx.networkId,
         'nodeVisibility',
         children,
-        'visible',
+        'element',
       )
     },
   })
