@@ -1,0 +1,7 @@
+{
+    "id": "multiscalePathwayViewer",
+    "name": "Multiscale Pathway Viewer",
+    "description": "Expand and fold Reactome pathway hierarchies in Cytoscape Web",
+    "version": "0.1.0",
+    "license": "MIT"
+}

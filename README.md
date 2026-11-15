@@ -1,8 +1,19 @@
 # Multiscale Pathway Viewer — Cytoscape Web
 
-Expand and fold Reactome pathway hierarchies inside [Cytoscape Web](https://web.cytoscape.org).
+Expand and fold Reactome BioPAX pathway abstractions hierarchies inside [Cytoscape Web](https://web.cytoscape.org). 
 
-Reactome networks carry containment alongside everything else: a pathway node is
+Link to the Cytoscape app store page of the app (with complete documentation and installation procedure): https://apps.cytoscape.org/apps/multiscalepathwayviewer
+
+![image](FigureApp.png)
+
+The Multiscale Pathway Viewer is a Cytoscape Web application for the joint and interactive exploration of two interdependent contextual abstractions of Reactome BioPAX pathways:
+
+- a pathway-centered abstraction focused on the hierarchy and sequentiality of pathways
+- a SIF abstraction focused on molecular interactions.
+
+The application enables users to dynamically expand and collapse abstractions for the 29 top-level Reactome pathways, following their compositional hierarchy. As users navigate this hierarchy, the application automatically synchronizes the corresponding SIF subnetworks representing molecular interactions. By linking pathway composition and molecular interactions, the Multiscale Pathway Viewer provides an interactive and multiscale approach to exploring Reactome pathway abstractions.
+
+In Reactome abstractions, a pathway node is
 connected to its subpathways by `abstraction:IsAComponentOf` edges. This app
 reads those edges and gives you three right-click actions on a node — collapse
 everything beneath it, expand one level, or expand the whole hierarchy. Nodes
